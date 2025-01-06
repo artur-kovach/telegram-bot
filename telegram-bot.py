@@ -98,7 +98,7 @@ async def handle_contact(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"Ви вже записані на {booked_numbers[phone_number]['day']} о {booked_numbers[phone_number]['slot'].replace('_', ':')}.")
         return
 
-    await update.message.reply_text(f"Дякую, {contact.first_name}! Вкажіть Ваше ім'я?")
+    await update.message.reply_text(f"Дякую, {contact.first_name}! Вкажіть Ваше ім'я.")
 
 # Обробка імені
 async def handle_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
