@@ -48,10 +48,11 @@ def send_email_notification(user_name, phone_number, day, slot):
     except Exception as e:
         logger.error(f"Помилка при відправці сповіщення: {e}")
 
+# Ініціалізація слотів для запису
 def initialize_slots():
-    today = datetime.now()
-    start_date = datetime(2025, 1, 1)
-    end_date = datetime(2025, 1, 31)
+    today = datetime.now().date()
+    start_date = today
+    end_date = today + timedelta(days=7)  # Доступні слоти тільки на 7 днів вперед
     blocked_days = {2, 3, 7, 8, 13, 14, 20, 21, 27, 28}  # Блоковані дні
 
     delta = timedelta(days=1)
@@ -60,23 +61,20 @@ def initialize_slots():
     while current_date <= end_date:
         date_str = current_date.strftime("%Y-%m-%d")
         day_of_month = current_date.day
-        weekday = current_date.weekday()
 
-        # Блокування конкретних днів, але дозволення вихідних
+        # Пропускаємо заблоковані дні
         if day_of_month in blocked_days:
             current_date += delta
             continue
 
-        # Ініціалізація слотів для будь-якого дня (включаючи вихідні)
         day_slots = []
         for hour in range(9, 18):
             slot_start = datetime(current_date.year, current_date.month, current_date.day, hour)
-            slot_end = slot_start + timedelta(hours=1)
-
-            if slot_start > today + timedelta(hours=2):
+            if slot_start > datetime.now() + timedelta(hours=2):
                 day_slots.append(f"{hour:02d}_00-{hour+1:02d}_00")
 
-        available_slots[date_str] = day_slots
+        if day_slots:
+            available_slots[date_str] = day_slots
         current_date += delta
 
 # Старт
