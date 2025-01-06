@@ -27,7 +27,7 @@ ADMIN_EMAILS = ["telegram_bot@keramika.uz.ua"]
 
 TOKEN = os.getenv("BOT_TOKEN")
 app = FastAPI()
-bot = Bot(token=7890592508:AAGBVL2XvUewLkyDP1H9AW50d7hDa8hxom8)
+bot = Bot(token=TOKEN)
 
 # Відправка сповіщення на email
 def send_email_notification(user_name, phone_number, day, slot):
