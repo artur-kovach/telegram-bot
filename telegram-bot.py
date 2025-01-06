@@ -98,7 +98,7 @@ async def handle_contact(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"Ви вже записані на {booked_numbers[phone_number]['day']} о {booked_numbers[phone_number]['slot'].replace('_', ':')}.")
         return
 
-    await update.message.reply_text(f"Дякую, {contact.first_name}! Під яким іменем Вас записати на дизайн?")
+    await update.message.reply_text(f"Дякую, {contact.first_name}! Вкажіть Ваше ім'я?")
 
 # Обробка імені
 async def handle_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -109,7 +109,7 @@ async def handle_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_data[user_id]["full_name"] = name
         buttons = [InlineKeyboardButton(day, callback_data=f"day:{day}") for day in available_slots]
         reply_markup = InlineKeyboardMarkup([buttons[i:i+2] for i in range(0, len(buttons), 2)])
-        await update.message.reply_text("Оберіть день для запису:", reply_markup=reply_markup)
+        await update.message.reply_text("Оберіть зручний день для запису:", reply_markup=reply_markup)
 
 # Вибір дня
 async def handle_day_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
