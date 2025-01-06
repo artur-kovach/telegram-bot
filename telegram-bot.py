@@ -1,5 +1,4 @@
-from fastapi import FastAPI, Request
-from telegram import Update, KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup, Bot
+from telegram import Update, KeyboardButton, ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 from datetime import datetime, timedelta
 import logging
@@ -21,15 +20,10 @@ booked_numbers = {}
 # Налаштування для відправки електронної пошти
 SMTP_SERVER = "mx1.cityhost.com.ua"
 SMTP_PORT = 587
-EMAIL_ADDRESS = "telegram_bot@keramika.uz.ua"
-EMAIL_PASSWORD = "Kachora3pab1*r"
+EMAIL_ADDRESS = "telegram_bot@keramika.uz.ua"  # Змініть на вашу електронну пошту
+EMAIL_PASSWORD = "Kachora3pab1*r"  # Змініть на ваш пароль
 ADMIN_EMAILS = ["telegram_bot@keramika.uz.ua"]
 
-TOKEN = os.getenv("BOT_TOKEN")
-app = FastAPI()
-bot = Bot(token=7890592508:AAGBVL2XvUewLkyDP1H9AW50d7hDa8hxom8)
-
-# Відправка сповіщення на email
 def send_email_notification(user_name, phone_number, day, slot):
     try:
         subject = "Новий запис на дизайн"
@@ -58,8 +52,8 @@ def send_email_notification(user_name, phone_number, day, slot):
 def initialize_slots():
     today = datetime.now().date()
     start_date = today
-    end_date = today + timedelta(days=7)
-    blocked_days = {2, 3, 7, 8, 13, 14, 20, 21, 27, 28}
+    end_date = today + timedelta(days=7)  # Доступні слоти тільки на 7 днів вперед
+    blocked_days = {2, 3, 7, 8, 13, 14, 20, 21, 27, 28}  # Блоковані дні
 
     delta = timedelta(days=1)
     current_date = start_date
@@ -68,6 +62,7 @@ def initialize_slots():
         date_str = current_date.strftime("%Y-%m-%d")
         day_of_month = current_date.day
 
+        # Пропускаємо заблоковані дні
         if day_of_month in blocked_days:
             current_date += delta
             continue
@@ -84,7 +79,7 @@ def initialize_slots():
 
 # Старт
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [[KeyboardButton("\ud83d\udcde Надіслати номер телефону", request_contact=True)]]
+    keyboard = [[KeyboardButton("📱 Надіслати номер телефону", request_contact=True)]]
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True, one_time_keyboard=True)
     await update.message.reply_text("Привіт! Натисніть кнопку нижче, щоб поділитися своїм номером телефону.", reply_markup=reply_markup)
 
@@ -98,11 +93,12 @@ async def handle_contact(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "phone_number": phone_number,
     }
 
+    # Перевірка на існуючий запис
     if phone_number in booked_numbers:
         await update.message.reply_text(f"Ви вже записані на {booked_numbers[phone_number]['day']} о {booked_numbers[phone_number]['slot'].replace('_', ':')}.")
         return
 
-    await update.message.reply_text(f"Дякую, {contact.first_name}! Вкажіть Ваше ім'я.")
+    await update.message.reply_text(f"Дякую, {contact.first_name}! Вкажіть Ваше ім'я?")
 
 # Обробка імені
 async def handle_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -115,31 +111,63 @@ async def handle_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup = InlineKeyboardMarkup([buttons[i:i+2] for i in range(0, len(buttons), 2)])
         await update.message.reply_text("Оберіть зручний день для запису:", reply_markup=reply_markup)
 
-# Вебхук обробка
-@app.post("/webhook")
-async def telegram_webhook(request: Request):
-    json_data = await request.json()
-    update = Update.de_json(json_data, bot)
-    await app.bot.update_queue.put(update)
-    return {"ok": True}
+# Вибір дня
+async def handle_day_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    day = query.data.split(":")[1]
 
-async def handle_updates(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Ваше повідомлення отримано!")
+    if day in available_slots:
+        buttons = [InlineKeyboardButton(slot, callback_data=f"slot:{day}:{slot}") for slot in available_slots[day]]
+        reply_markup = InlineKeyboardMarkup([buttons[i:i+2] for i in range(0, len(buttons), 2)])
+        await query.message.reply_text(f"Оберіть час на {day}:", reply_markup=reply_markup)
+
+# Вибір часу
+async def handle_slot_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    if not query.data:
+        await query.message.reply_text("Сталася помилка. Спробуйте ще раз.")
+        return
+
+    try:
+        _, day, slot = query.data.rsplit(":", 2)
+    except ValueError:
+        await query.message.reply_text("Неправильний формат даних. Спробуйте ще раз.")
+        return
+
+    user_id = query.from_user.id
+    phone_number = user_data[user_id]["phone_number"]
+
+    # Перевірка на існуючий запис
+    if phone_number in booked_numbers:
+        await query.message.reply_text(f"Ви вже записані на {booked_numbers[phone_number]['day']} о {booked_numbers[phone_number]['slot'].replace('_', ':')}.")
+        return
+
+    if slot in available_slots.get(day, []):
+        available_slots[day].remove(slot)
+        booked_numbers[phone_number] = {"day": day, "slot": slot}
+        user_name = user_data[user_id].get("full_name", "Користувач")
+        await query.edit_message_text(f"Ваш запис підтверджено на {day} о {slot.replace('_', ':')}.")
+
+        # Надсилання сповіщення на електронну пошту
+        send_email_notification(user_name, phone_number, day, slot)
+    else:
+        await query.message.reply_text("Цей слот вже зайнятий. Оберіть інший.")
 
 # Головна функція
 def main():
-    global app
-    application = ApplicationBuilder().token(TOKEN).updater(None).build()
+    TOKEN = "7890592508:AAGBVL2XvUewLkyDP1H9AW50d7hDa8hxom8"
+    app = ApplicationBuilder().token(TOKEN).build()
 
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(MessageHandler(filters.CONTACT, handle_contact))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_name))
-    application.add_handler(CallbackQueryHandler(handle_updates))
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.CONTACT, handle_contact))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_name))
+    app.add_handler(CallbackQueryHandler(handle_day_selection, pattern="^day:"))
+    app.add_handler(CallbackQueryHandler(handle_slot_selection, pattern="^slot:"))
 
     initialize_slots()
-    app.bot = application
-    app.bot.update_queue = application.update_queue
+    logger.info("Бот запущено...")
+    app.run_polling()
 
 if __name__ == "__main__":
     main()
-
