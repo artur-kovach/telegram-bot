@@ -149,28 +149,25 @@ async def handle_slot_selection(update: Update, context: ContextTypes.DEFAULT_TY
     else:
         await query.message.reply_text("Цей слот вже зайнятий. Оберіть інший.")
 
-import os
-import logging
-from telegram.ext import Application, CommandHandler, MessageHandler, filters
+# Оголошуємо функцію run_polling
+def run_polling():
+    app = ApplicationBuilder().token("YOUR_BOT_TOKEN").build()
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# Функція для команди /start
-async def start(update, context):
-    await update.message.reply_text("Привіт! Я готовий працювати!")
-
-# Створення та запуск бота
-def main():
-    # Ініціалізація бота з токеном
-    app = Application.builder().token("7890592508:AAGBVL2XvUewLkyDP1H9AW50d7hDa8hxom8").build()
-
-    # Додавання обробників
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.CONTACT, handle_contact))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_name))
+    app.add_handler(CallbackQueryHandler(handle_day_selection, pattern="^day:"))
+    app.add_handler(CallbackQueryHandler(handle_slot_selection, pattern="^slot:"))
 
-    # Запуск polling для отримання нових повідомлень
-    logger.info("Запускаємо бот через polling...")
+    initialize_slots()
+
+    # Заміна на polling
     app.run_polling()
 
+# Головна функція
+def main():
+    run_polling()  # Викликаємо polling замість run_webhook
+
 if __name__ == "__main__":
-    main()  # Запускаємо без asyncio.run()
+    main()  # Просто викликаємо main() без asyncio.run()
+
