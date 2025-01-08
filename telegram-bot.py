@@ -168,12 +168,20 @@ def main():
     app.add_handler(CallbackQueryHandler(handle_slot_selection, pattern="^slot:"))
 
     # Використання вебхука
+import asyncio
+import os
+from telegram.ext import Application
+
+async def run_webhook():
+    app = Application.builder().token("YOUR_TELEGRAM_BOT_TOKEN").build()
+    
     await app.run_webhook(
         listen="0.0.0.0",
-        port=10000,
+        port=int(os.getenv("PORT", 8443)),
         webhook_url="https://blog.keramika.uz.ua/webhook"
     )
 
 if __name__ == "__main__":
     asyncio.run(run_webhook())
+
 
