@@ -149,35 +149,28 @@ async def handle_slot_selection(update: Update, context: ContextTypes.DEFAULT_TY
     else:
         await query.message.reply_text("Цей слот вже зайнятий. Оберіть інший.")
 
-import asyncio
 import os
-from telegram.ext import Application
 import logging
+from telegram.ext import Application
+import asyncio
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 async def run_webhook():
     # Ініціалізація бота
-    app = Application.builder().token("7890592508:AAGBVL2XvUewLkyDP1H9AW50d7hDa8hxom8").build()
+    app = Application.builder().token("YOUR_TELEGRAM_BOT_TOKEN").build()
 
     # Запуск вебхука
     await app.run_webhook(
         listen="0.0.0.0",
         port=int(os.getenv("PORT", 8443)),
-        webhook_url="https://blog.keramika.uz.ua/webhook"
+        webhook_url="https://your-webhook-url.com/webhook"
     )
 
 def main():
-    loop = asyncio.get_event_loop()
-
-    if loop.is_running():
-        logger.info("Цикл подій вже запущено. Запускаємо завдання через asyncio.ensure_future.")
-        asyncio.ensure_future(run_webhook())  # Запускаємо вебхук без перезапуску циклу
-    else:
-        logger.info("Запускаємо новий цикл подій.")
-        loop.run_until_complete(run_webhook())  # Запускаємо вебхук у новому циклі
+    logger.info("Запускаємо бота...")
+    asyncio.run(run_webhook())
 
 if __name__ == "__main__":
     main()
-
