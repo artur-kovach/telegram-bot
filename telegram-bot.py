@@ -167,7 +167,19 @@ def main():
 
     initialize_slots()
     logger.info("Бот запущено...")
-    app.run_polling()
+
+WEBHOOK_URL = "https://blog.keramika.uz.ua/webhook"  # Замість цього вставте свій URL вебхука
+
+async def set_webhook():
+    await app.bot.set_webhook(WEBHOOK_URL)
 
 if __name__ == "__main__":
-    main()
+    import asyncio
+    
+    asyncio.run(set_webhook())
+    app.run_webhook(
+        listen="0.0.0.0",
+        port=8000,
+        url_path="/webhook",
+        webhook_url=WEBHOOK_URL,
+    )
