@@ -170,12 +170,13 @@ async def run_webhook():
 
 def main():
     try:
+        # Використовуємо існуючий цикл подій, якщо він запущений
         loop = asyncio.get_event_loop()
 
-        # Якщо цикл подій вже працює
+        # Якщо цикл вже працює
         if loop.is_running():
             logger.info("Цикл подій вже запущено, використовуємо create_task")
-            loop.create_task(run_webhook())
+            asyncio.ensure_future(run_webhook())
         else:
             logger.info("Запускаємо новий цикл подій")
             loop.run_until_complete(run_webhook())
@@ -185,5 +186,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
