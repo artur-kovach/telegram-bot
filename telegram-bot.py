@@ -151,11 +151,9 @@ async def handle_slot_selection(update: Update, context: ContextTypes.DEFAULT_TY
 
 import asyncio
 
-WEBHOOK_URL = "https://blog.keramika.uz.ua/webhook"  # Замість цього вставте свій URL вебхука
-
-# Оголошуємо функцію run_webhook
-async def run_webhook():
-    app = ApplicationBuilder().token("7890592508:AAGBVL2XvUewLkyDP1H9AW50d7hDa8hxom8").build()
+# Оголошуємо функцію run_polling
+def run_polling():
+    app = ApplicationBuilder().token("YOUR_BOT_TOKEN").build()
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.CONTACT, handle_contact))
@@ -165,18 +163,12 @@ async def run_webhook():
 
     initialize_slots()
 
-    port = int(os.getenv("PORT", 8000))
-
-    await app.run_webhook(
-        listen="0.0.0.0",
-        port=port,
-        url_path="/webhook",
-        webhook_url="https://blog.keramika.uz.ua/webhook",
-    )
+    # Заміна на polling
+    app.run_polling()
 
 # Головна функція
 def main():
-    asyncio.run(run_webhook())  # Викликаємо асинхронну функцію run_webhook
+    run_polling()  # Викликаємо polling замість run_webhook
 
 if __name__ == "__main__":
     main()  # Просто викликаємо main() без asyncio.run()
