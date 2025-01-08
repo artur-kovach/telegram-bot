@@ -150,45 +150,40 @@ async def handle_slot_selection(update: Update, context: ContextTypes.DEFAULT_TY
         await query.message.reply_text("Цей слот вже зайнятий. Оберіть інший.")
 
 import asyncio
-
-from telegram.ext import ApplicationBuilder
-import os
-
-WEBHOOK_URL = "https://blog.keramika.uz.ua/webhook"  # Замість цього вставте свій URL вебхука
-
-def main():
-    TOKEN = "7890592508:AAGBVL2XvUewLkyDP1H9AW50d7hDa8hxom8"
-    app = ApplicationBuilder().token(TOKEN).build()
-
-    # Ваші хендлери
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.CONTACT, handle_contact))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_name))
-    app.add_handler(CallbackQueryHandler(handle_day_selection, pattern="^day:"))
-    app.add_handler(CallbackQueryHandler(handle_slot_selection, pattern="^slot:"))
-
-    # Використання вебхука
-import asyncio
 import os
 from telegram.ext import Application
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 async def run_webhook():
+    # Ініціалізація бота
     app = Application.builder().token("7890592508:AAGBVL2XvUewLkyDP1H9AW50d7hDa8hxom8").build()
 
+    # Запуск вебхука
     await app.run_webhook(
         listen="0.0.0.0",
         port=int(os.getenv("PORT", 8443)),
         webhook_url="https://blog.keramika.uz.ua/webhook"
     )
 
-# Якщо цикл подій уже запущено:
 def main():
-    loop = asyncio.get_event_loop()
-    if loop.is_running():
-        loop.create_task(run_webhook())
-    else:
-        loop.run_until_complete(run_webhook())
+    try:
+        loop = asyncio.get_event_loop()
+
+        # Якщо цикл подій вже працює
+        if loop.is_running():
+            logger.info("Цикл подій вже запущено, використовуємо create_task")
+            loop.create_task(run_webhook())
+        else:
+            logger.info("Запускаємо новий цикл подій")
+            loop.run_until_complete(run_webhook())
+
+    except Exception as e:
+        logger.error(f"Помилка запуску бота: {e}")
 
 if __name__ == "__main__":
     main()
+
 
