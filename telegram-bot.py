@@ -164,7 +164,7 @@ async def main():
     app.add_handler(CallbackQueryHandler(handle_day_selection, pattern="^day:"))
     app.add_handler(CallbackQueryHandler(handle_slot_selection, pattern="^slot:"))
 
-initialize_slots()
+    initialize_slots()
 
     port = int(os.getenv("PORT", 8000))
 
