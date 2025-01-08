@@ -12,4 +12,3 @@ python-telegram-bot
 uvicorn
 python-telegram-bot[webhooks]
 mysql-connector-python==8.0.27
-smtplib
