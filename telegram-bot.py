@@ -79,21 +79,26 @@ def initialize_slots():
 
 # Старт
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.info("Start command received")  # Лог для старту
     keyboard = [[KeyboardButton("📱 Надіслати номер телефону", request_contact=True)]]
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True, one_time_keyboard=True)
     await update.message.reply_text("Привіт! Натисніть кнопку нижче, щоб поділитися своїм номером телефону.", reply_markup=reply_markup)
 
+# Обробка контакту
 async def handle_contact(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.info(f"Received contact from {update.message.contact.phone_number}")  # Лог для отримання контакту
     contact = update.message.contact
     phone_number = contact.phone_number
+
     user_data[update.effective_user.id] = {
         "name": contact.first_name,
         "phone_number": phone_number,
     }
-    await update.message.reply_text(f"Дякую, {contact.first_name}! Вкажіть Ваше ім'я.")
 
+    # Перевірка на існуючий запис
+    if phone_number in booked_numbers:
+        await update.message.reply_text(f"Ви вже записані на {booked_numbers[phone_number]['day']} о {booked_numbers[phone_number]['slot'].replace('_', ':')}.")
+        return
+
+    await update.message.reply_text(f"Дякую, {contact.first_name}! Вкажіть Ваше ім'я?")
 
 # Обробка імені
 async def handle_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -149,9 +154,10 @@ async def handle_slot_selection(update: Update, context: ContextTypes.DEFAULT_TY
     else:
         await query.message.reply_text("Цей слот вже зайнятий. Оберіть інший.")
 
-# Оголошуємо функцію run_polling
-def run_polling():
-    app = ApplicationBuilder().token("7890592508:AAGBVL2XvUewLkyDP1H9AW50d7hDa8hxom8").build()
+# Головна функція
+def main():
+    TOKEN = "7890592508:AAGBVL2XvUewLkyDP1H9AW50d7hDa8hxom8"
+    app = ApplicationBuilder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.CONTACT, handle_contact))
@@ -160,18 +166,8 @@ def run_polling():
     app.add_handler(CallbackQueryHandler(handle_slot_selection, pattern="^slot:"))
 
     initialize_slots()
-
-import asyncio
-from telegram.ext import Application, CommandHandler
-
-async def main():
-    application = Application.builder().token("YOUR_BOT_TOKEN").build()
-
-    # Додайте обробники команд
-    application.add_handler(CommandHandler("start", start))
-
-    # Запустіть polling
-    await application.run_polling()
+    logger.info("Бот запущено...")
+    app.run_polling()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
