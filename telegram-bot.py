@@ -182,4 +182,3 @@ def main():
 
 if __name__ == "__main__":
     main()  # Просто викликаємо main() без asyncio.run()
-
