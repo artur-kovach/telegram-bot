@@ -154,9 +154,12 @@ async def handle_slot_selection(update: Update, context: ContextTypes.DEFAULT_TY
     else:
         await query.message.reply_text("Цей слот вже зайнятий. Оберіть інший.")
 
+WEBHOOK_URL = "https://blog.keramika.uz.ua/webhook"  # Замість цього вставте свій URL вебхука
+
 # Головна функція
 def main():
     TOKEN = "7890592508:AAGBVL2XvUewLkyDP1H9AW50d7hDa8hxom8"
+    global app  # Додаємо global, щоб app було доступне у всій програмі
     app = ApplicationBuilder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
@@ -166,20 +169,20 @@ def main():
     app.add_handler(CallbackQueryHandler(handle_slot_selection, pattern="^slot:"))
 
     initialize_slots()
-    logger.info("Бот запущено...")
 
-WEBHOOK_URL = "https://blog.keramika.uz.ua/webhook"  # Замість цього вставте свій URL вебхука
-
+# Встановлення вебхука
 async def set_webhook():
     await app.bot.set_webhook(WEBHOOK_URL)
 
 if __name__ == "__main__":
     import asyncio
-    
-    asyncio.run(set_webhook())
+
+    main()  # Спершу викликаємо main(), щоб створити app
+    asyncio.run(set_webhook())  # Потім викликаємо асинхронне встановлення вебхука
     app.run_webhook(
         listen="0.0.0.0",
         port=8000,
         url_path="/webhook",
         webhook_url=WEBHOOK_URL,
     )
+
