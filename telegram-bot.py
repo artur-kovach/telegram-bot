@@ -169,18 +169,14 @@ async def run_webhook():
     )
 
 def main():
-    try:
-        loop = asyncio.get_event_loop()
+    loop = asyncio.get_event_loop()
 
-        if loop.is_running():
-            logger.info("Цикл подій вже запущено. Запускаємо завдання через asyncio.ensure_future.")
-            asyncio.ensure_future(run_webhook())
-        else:
-            logger.info("Запускаємо новий цикл подій.")
-            loop.run_until_complete(run_webhook())
-
-    except Exception as e:
-        logger.error(f"Помилка запуску бота: {e}")
+    if loop.is_running():
+        logger.info("Цикл подій вже запущено. Запускаємо завдання через asyncio.ensure_future.")
+        asyncio.ensure_future(run_webhook())  # Запускаємо вебхук без перезапуску циклу
+    else:
+        logger.info("Запускаємо новий цикл подій.")
+        loop.run_until_complete(run_webhook())  # Запускаємо вебхук у новому циклі
 
 if __name__ == "__main__":
     main()
