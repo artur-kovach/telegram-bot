@@ -172,14 +172,8 @@ def main():
 
     initialize_slots()
 
-# Встановлення вебхука
-async def set_webhook():
-    await app.bot.set_webhook(WEBHOOK_URL)
-
-# Запуск вебхука асинхронно
-async def run_webhook():
-    await set_webhook()
-    await app.run_webhook(
+    # Викликаємо метод без asyncio.run()
+    app.run_webhook(
         listen="0.0.0.0",
         port=8000,
         url_path="/webhook",
@@ -187,5 +181,5 @@ async def run_webhook():
     )
 
 if __name__ == "__main__":
-    main()  # Спершу викликаємо main(), щоб створити app
-    asyncio.run(run_webhook())  # Потім викликаємо асинхронний запуск вебхука
+    main()  # Просто викликаємо main() без asyncio.run()
+
