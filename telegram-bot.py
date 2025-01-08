@@ -164,10 +164,21 @@ def run_polling():
     # Заміна на polling
     app.run_polling()
 
-# Головна функція
-def main():
-    run_polling()  # Викликаємо polling замість run_webhook
+from telegram.ext import ApplicationBuilder
+
+async def main():
+    application = ApplicationBuilder().token("7890592508:AAGBVL2XvUewLkyDP1H9AW50d7hDa8hxom8").build()
+
+    # Додавання хендлерів
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(MessageHandler(filters.TEXT, handle_message))
+    # Додати інші хендлери
+
+    # Запуск бота
+    await application.run_polling()
 
 if __name__ == "__main__":
-    main()  # Просто викликаємо main() без asyncio.run()
+    import asyncio
+    asyncio.run(main())
+
 
