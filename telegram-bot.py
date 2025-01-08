@@ -153,10 +153,9 @@ import asyncio
 
 WEBHOOK_URL = "https://blog.keramika.uz.ua/webhook"  # Замість цього вставте свій URL вебхука
 
-# Головна функція
-async def main():
-    TOKEN = "7890592508:AAGBVL2XvUewLkyDP1H9AW50d7hDa8hxom8"
-    app = ApplicationBuilder().token(TOKEN).build()  # Ініціалізація app
+# Оголошуємо функцію run_webhook
+async def run_webhook():
+    app = ApplicationBuilder().token("7890592508:AAGBVL2XvUewLkyDP1H9AW50d7hDa8hxom8").build()
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.CONTACT, handle_contact))
@@ -175,8 +174,13 @@ async def main():
         webhook_url="https://blog.keramika.uz.ua/webhook",
     )
 
-# Основна функція
+# Головна функція
 def main():
+    asyncio.run(run_webhook())  # Викликаємо асинхронну функцію run_webhook
+
+if __name__ == "__main__":
+    main()  # Просто викликаємо main() без asyncio.run()
+
     import asyncio
     asyncio.run(run_webhook())
 
