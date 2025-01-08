@@ -176,4 +176,4 @@ def main():
     )
 
 if __name__ == "__main__":
-    main()  # Просто викликаємо main() без asyncio.run()
+    asyncio.run(main())  # Замінити main() на asyncio.run(main())
