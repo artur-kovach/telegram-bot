@@ -154,10 +154,9 @@ import asyncio
 WEBHOOK_URL = "https://blog.keramika.uz.ua/webhook"  # Замість цього вставте свій URL вебхука
 
 # Головна функція
-def main():
+async def main():
     TOKEN = "7890592508:AAGBVL2XvUewLkyDP1H9AW50d7hDa8hxom8"
-    global app  # Додаємо global, щоб app було доступне у всій програмі
-    app = ApplicationBuilder().token(TOKEN).build()
+    app = ApplicationBuilder().token(TOKEN).build()  # Ініціалізація app
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.CONTACT, handle_contact))
@@ -167,12 +166,13 @@ def main():
 
     initialize_slots()
 
-app.run_webhook(
-    listen="0.0.0.0",
-    port=8000,
-    url_path="/webhook",
-    webhook_url=WEBHOOK_URL,  # Використовуємо змінну, яку ви вже визначили
-)
+    # Запуск webhook
+    await app.run_webhook(
+        listen="0.0.0.0",
+        port=8000,
+        url_path="/webhook",
+        webhook_url="https://blog.keramika.uz.ua/webhook",
+    )
 
 if __name__ == "__main__":
-    asyncio.run(main())  # Замінити main() на asyncio.run(main())
+    asyncio.run(main())  # Запуск main за допомогою asyncio.run
