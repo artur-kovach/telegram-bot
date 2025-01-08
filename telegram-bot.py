@@ -168,12 +168,12 @@ def main():
     app.add_handler(CallbackQueryHandler(handle_slot_selection, pattern="^slot:"))
 
     # Використання вебхука
-    app.run_webhook(
+    await app.run_webhook(
         listen="0.0.0.0",
-        port=int(os.getenv("PORT", 8000)),
-        url_path="/webhook",
+        port=10000,
         webhook_url="https://blog.keramika.uz.ua/webhook"
     )
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(run_webhook())
+
