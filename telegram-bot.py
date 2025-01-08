@@ -152,7 +152,6 @@ async def handle_slot_selection(update: Update, context: ContextTypes.DEFAULT_TY
 import os
 import logging
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
-import asyncio
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -162,7 +161,7 @@ async def start(update, context):
     await update.message.reply_text("Привіт! Я готовий працювати!")
 
 # Створення та запуск бота
-async def main():
+def main():
     # Ініціалізація бота з токеном
     app = Application.builder().token("7890592508:AAGBVL2XvUewLkyDP1H9AW50d7hDa8hxom8").build()
 
@@ -171,7 +170,7 @@ async def main():
 
     # Запуск polling для отримання нових повідомлень
     logger.info("Запускаємо бот через polling...")
-    await app.run_polling()
+    app.run_polling()
 
 if __name__ == "__main__":
-    asyncio.run(main())  # Запуск основної функції в новому циклі подій
+    main()  # Запускаємо без asyncio.run()
