@@ -169,8 +169,13 @@ async def run_webhook():
     )
 
 def main():
-    logger.info("Запускаємо бота...")
-    asyncio.run(run_webhook())
+    logger.info("Запускаємо бота...")  # Логування запуску
+    # Просто запускаємо вебхук асинхронно без додаткового керування циклом подій
+    asyncio.ensure_future(run_webhook())  # Запускаємо вебхук у фоновому режимі
+
+    # Дозволяємо додатку працювати без завершення
+    loop = asyncio.get_event_loop()
+    loop.run_forever()  # Цикл подій буде працювати вічно
 
 if __name__ == "__main__":
     main()
