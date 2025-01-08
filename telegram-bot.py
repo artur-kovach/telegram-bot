@@ -159,13 +159,13 @@ logger = logging.getLogger(__name__)
 
 async def run_webhook():
     # Ініціалізація бота
-    app = Application.builder().token("YOUR_TELEGRAM_BOT_TOKEN").build()
+    app = Application.builder().token("7890592508:AAGBVL2XvUewLkyDP1H9AW50d7hDa8hxom8").build()
 
     # Запуск вебхука
     await app.run_webhook(
         listen="0.0.0.0",
         port=int(os.getenv("PORT", 8443)),
-        webhook_url="https://your-webhook-url.com/webhook"
+        webhook_url="https://blog.keramika.uz.ua/webhook"
     )
 
 def main():
