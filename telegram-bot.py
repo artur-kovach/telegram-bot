@@ -164,20 +164,21 @@ async def main():
     app.add_handler(CallbackQueryHandler(handle_day_selection, pattern="^day:"))
     app.add_handler(CallbackQueryHandler(handle_slot_selection, pattern="^slot:"))
 
-    initialize_slots()
+initialize_slots()
 
-import os
+    port = int(os.getenv("PORT", 8000))
 
-# Отримуємо порт із змінної середовища або використовуємо 8000 за замовчуванням
-port = int(os.getenv("PORT", 8000))
+    await app.run_webhook(
+        listen="0.0.0.0",
+        port=port,
+        url_path="/webhook",
+        webhook_url="https://blog.keramika.uz.ua/webhook",
+    )
 
-await app.run_webhook(
-    listen="0.0.0.0",
-    port=port,
-    url_path="/webhook",
-    webhook_url="https://blog.keramika.uz.ua/webhook",
-)
-
+# Основна функція
+def main():
+    import asyncio
+    asyncio.run(run_webhook())
 
 if __name__ == "__main__":
-    asyncio.run(main())  # Запуск main за допомогою asyncio.run
+    main()
