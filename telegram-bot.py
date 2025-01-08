@@ -161,24 +161,23 @@ def run_polling():
 
     initialize_slots()
 
-    # Заміна на polling
-    app.run_polling()
+from telegram import Update
+from telegram.ext import ApplicationBuilder, MessageHandler, filters
 
-from telegram.ext import ApplicationBuilder
+async def handle_message(update: Update, context):
+    # Ваш код для обробки повідомлень
+    text = update.message.text
+    await update.message.reply_text(f"Received: {text}")
 
 async def main():
     application = ApplicationBuilder().token("7890592508:AAGBVL2XvUewLkyDP1H9AW50d7hDa8hxom8").build()
 
     # Додавання хендлерів
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(MessageHandler(filters.TEXT, handle_message))
-    # Додати інші хендлери
-
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    
     # Запуск бота
     await application.run_polling()
 
 if __name__ == "__main__":
     import asyncio
     asyncio.run(main())
-
-
