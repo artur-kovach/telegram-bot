@@ -173,15 +173,22 @@ import os
 from telegram.ext import Application
 
 async def run_webhook():
-    app = Application.builder().token("YOUR_TELEGRAM_BOT_TOKEN").build()
-    
+    app = Application.builder().token("7890592508:AAGBVL2XvUewLkyDP1H9AW50d7hDa8hxom8").build()
+
     await app.run_webhook(
         listen="0.0.0.0",
         port=int(os.getenv("PORT", 8443)),
         webhook_url="https://blog.keramika.uz.ua/webhook"
     )
 
-if __name__ == "__main__":
-    asyncio.run(run_webhook())
+# Якщо цикл подій уже запущено:
+def main():
+    loop = asyncio.get_event_loop()
+    if loop.is_running():
+        loop.create_task(run_webhook())
+    else:
+        loop.run_until_complete(run_webhook())
 
+if __name__ == "__main__":
+    main()
 
