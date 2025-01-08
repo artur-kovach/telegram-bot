@@ -172,7 +172,7 @@ def main():
         listen="0.0.0.0",
         port=8000,
         url_path="/webhook",
-        webhook_url=WEBHOOK_URL,
+        webhook_url=https://blog.keramika.uz.ua/webhook,
     )
 
 if __name__ == "__main__":
