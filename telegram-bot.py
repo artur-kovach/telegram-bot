@@ -79,26 +79,21 @@ def initialize_slots():
 
 # Старт
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logger.info("Start command received")  # Лог для старту
     keyboard = [[KeyboardButton("📱 Надіслати номер телефону", request_contact=True)]]
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True, one_time_keyboard=True)
     await update.message.reply_text("Привіт! Натисніть кнопку нижче, щоб поділитися своїм номером телефону.", reply_markup=reply_markup)
 
-# Обробка контакту
 async def handle_contact(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    logger.info(f"Received contact from {update.message.contact.phone_number}")  # Лог для отримання контакту
     contact = update.message.contact
     phone_number = contact.phone_number
-
     user_data[update.effective_user.id] = {
         "name": contact.first_name,
         "phone_number": phone_number,
     }
-
-    # Перевірка на існуючий запис
-    if phone_number in booked_numbers:
-        await update.message.reply_text(f"Ви вже записані на {booked_numbers[phone_number]['day']} о {booked_numbers[phone_number]['slot'].replace('_', ':')}.")
-        return
-
     await update.message.reply_text(f"Дякую, {contact.first_name}! Вкажіть Ваше ім'я.")
+
 
 # Обробка імені
 async def handle_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
