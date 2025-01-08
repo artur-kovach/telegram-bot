@@ -151,24 +151,29 @@ async def handle_slot_selection(update: Update, context: ContextTypes.DEFAULT_TY
 
 import asyncio
 
-# Оголошуємо функцію run_polling
-def run_polling():
-    app = ApplicationBuilder().token("7890592508:AAGBVL2XvUewLkyDP1H9AW50d7hDa8hxom8").build()
+from telegram.ext import ApplicationBuilder
+import os
 
+WEBHOOK_URL = "https://blog.keramika.uz.ua/webhook"  # Замість цього вставте свій URL вебхука
+
+def main():
+    TOKEN = "7890592508:AAGBVL2XvUewLkyDP1H9AW50d7hDa8hxom8"
+    app = ApplicationBuilder().token(TOKEN).build()
+
+    # Ваші хендлери
     app.add_handler(CommandHandler("start", start))
     app.add_handler(MessageHandler(filters.CONTACT, handle_contact))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_name))
     app.add_handler(CallbackQueryHandler(handle_day_selection, pattern="^day:"))
     app.add_handler(CallbackQueryHandler(handle_slot_selection, pattern="^slot:"))
 
-    initialize_slots()
-
-    # Заміна на polling
-    app.run_polling()
-
-# Головна функція
-def main():
-    run_polling()  # Викликаємо polling замість run_webhook
+    # Використання вебхука
+    app.run_webhook(
+        listen="0.0.0.0",
+        port=int(os.getenv("PORT", 8000)),
+        url_path="/webhook",
+        webhook_url="https://blog.keramika.uz.ua/webhook"
+    )
 
 if __name__ == "__main__":
-    main()  # Просто викликаємо main() без asyncio.run()
+    main()
