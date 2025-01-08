@@ -7,6 +7,7 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+import asyncio
 
 # Налаштування логування
 logging.basicConfig(level=logging.INFO)
@@ -148,15 +149,15 @@ async def handle_slot_selection(update: Update, context: ContextTypes.DEFAULT_TY
         booked_numbers[phone_number] = {"day": day, "slot": slot}
         user_name = user_data[user_id].get("full_name", "Користувач")
         await query.edit_message_text(f"Ваш запис підтверджено на {day} о {slot.replace('_', ':')}.")
-
+        
         # Надсилання сповіщення на електронну пошту
         send_email_notification(user_name, phone_number, day, slot)
     else:
         await query.message.reply_text("Цей слот вже зайнятий. Оберіть інший.")
 
-# Головна функція
-def main():
-    TOKEN = "7890592508:AAGBVL2XvUewLkyDP1H9AW50d7hDa8hxom8"
+# Головна функція для запуску бота асинхронно
+async def main():
+    TOKEN = "YOUR_BOT_TOKEN"
     app = ApplicationBuilder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
@@ -167,7 +168,7 @@ def main():
 
     initialize_slots()
     logger.info("Бот запущено...")
-    app.run_polling()
+    await app.run_polling()
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
