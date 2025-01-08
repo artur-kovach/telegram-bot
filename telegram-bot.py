@@ -167,13 +167,12 @@ def main():
 
     initialize_slots()
 
-    # Викликаємо метод без asyncio.run()
-    app.run_webhook(
-        listen="0.0.0.0",
-        port=8000,
-        url_path="/webhook",
-        webhook_url="https://blog.keramika.uz.ua/webhook",
-    )
+app.run_webhook(
+    listen="0.0.0.0",
+    port=8000,
+    url_path="/webhook",
+    webhook_url=WEBHOOK_URL,  # Використовуємо змінну, яку ви вже визначили
+)
 
 if __name__ == "__main__":
     asyncio.run(main())  # Замінити main() на asyncio.run(main())
