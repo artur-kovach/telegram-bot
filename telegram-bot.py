@@ -2,12 +2,9 @@ from telegram import Update, KeyboardButton, ReplyKeyboardMarkup, InlineKeyboard
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 from datetime import datetime, timedelta
 import logging
-import json
-import os
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-import asyncio
 
 # Налаштування логування
 logging.basicConfig(level=logging.INFO)
@@ -155,8 +152,8 @@ async def handle_slot_selection(update: Update, context: ContextTypes.DEFAULT_TY
     else:
         await query.message.reply_text("Цей слот вже зайнятий. Оберіть інший.")
 
-# Головна функція для запуску бота асинхронно
-async def main():
+# Головна функція для запуску бота
+def main():
     TOKEN = "7890592508:AAGBVL2XvUewLkyDP1H9AW50d7hDa8hxom8"
     app = ApplicationBuilder().token(TOKEN).build()
 
@@ -168,7 +165,9 @@ async def main():
 
     initialize_slots()
     logger.info("Бот запущено...")
-    await app.run_polling()
+
+    # Використання run_polling() без asyncio.run()
+    app.run_polling()
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
