@@ -157,7 +157,7 @@ async def handle_slot_selection(update: Update, context: ContextTypes.DEFAULT_TY
 
 # Головна функція для запуску бота асинхронно
 async def main():
-    TOKEN = "YOUR_BOT_TOKEN"
+    TOKEN = "7890592508:AAGBVL2XvUewLkyDP1H9AW50d7hDa8hxom8"
     app = ApplicationBuilder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
