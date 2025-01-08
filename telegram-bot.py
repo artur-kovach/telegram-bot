@@ -154,6 +154,8 @@ async def handle_slot_selection(update: Update, context: ContextTypes.DEFAULT_TY
     else:
         await query.message.reply_text("Цей слот вже зайнятий. Оберіть інший.")
 
+import asyncio
+
 WEBHOOK_URL = "https://blog.keramika.uz.ua/webhook"  # Замість цього вставте свій URL вебхука
 
 # Головна функція
@@ -174,15 +176,16 @@ def main():
 async def set_webhook():
     await app.bot.set_webhook(WEBHOOK_URL)
 
-if __name__ == "__main__":
-    import asyncio
-
-    main()  # Спершу викликаємо main(), щоб створити app
-    asyncio.run(set_webhook())  # Потім викликаємо асинхронне встановлення вебхука
-    app.run_webhook(
+# Запуск вебхука асинхронно
+async def run_webhook():
+    await set_webhook()
+    await app.run_webhook(
         listen="0.0.0.0",
         port=8000,
         url_path="/webhook",
         webhook_url=WEBHOOK_URL,
     )
 
+if __name__ == "__main__":
+    main()  # Спершу викликаємо main(), щоб створити app
+    asyncio.run(run_webhook())  # Потім викликаємо асинхронний запуск вебхука
