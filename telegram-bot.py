@@ -151,28 +151,27 @@ async def handle_slot_selection(update: Update, context: ContextTypes.DEFAULT_TY
 
 import os
 import logging
-from telegram.ext import Application
+from telegram.ext import Application, CommandHandler, MessageHandler, filters
 import asyncio
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-async def run_webhook():
-    # Ініціалізація бота
+# Функція для команди /start
+async def start(update, context):
+    await update.message.reply_text("Привіт! Я готовий працювати!")
+
+# Створення та запуск бота
+async def main():
+    # Ініціалізація бота з токеном
     app = Application.builder().token("7890592508:AAGBVL2XvUewLkyDP1H9AW50d7hDa8hxom8").build()
 
-    # Запуск вебхука
-    await app.run_webhook(
-        listen="0.0.0.0",
-        port=int(os.getenv("PORT", 8443)),
-        webhook_url="https://blog.keramika.uz.ua/webhook"
-    )
+    # Додавання обробників
+    app.add_handler(CommandHandler("start", start))
 
-def main():
-    logger.info("Запускаємо бота...")  # Логування запуску
-    # Запуск вебхука без закриття циклу подій
-    asyncio.run(run_webhook())  # Запускаємо асинхронний процес
+    # Запуск polling для отримання нових повідомлень
+    logger.info("Запускаємо бот через polling...")
+    await app.run_polling()
 
 if __name__ == "__main__":
-    main()
-
+    asyncio.run(main())  # Запуск основної функції в новому циклі подій
