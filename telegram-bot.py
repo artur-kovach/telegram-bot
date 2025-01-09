@@ -5,6 +5,8 @@ import logging
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from flask import Flask
+from threading import Thread
 
 # Налаштування логування
 logging.basicConfig(level=logging.INFO)
@@ -75,126 +77,91 @@ def initialize_slots():
             available_slots[date_str] = day_slots
         current_date += delta
 
-# Старт
+# Telegram бота
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [[KeyboardButton("📱 Надіслати номер телефону", request_contact=True)]]
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True, one_time_keyboard=True)
     await update.message.reply_text("Привіт! Натисніть кнопку нижче, щоб поділитися своїм номером телефону.", reply_markup=reply_markup)
 
-# Обробка контакту
 async def handle_contact(update: Update, context: ContextTypes.DEFAULT_TYPE):
     contact = update.message.contact
     phone_number = contact.phone_number
-
     user_data[update.effective_user.id] = {
         "name": contact.first_name,
         "phone_number": phone_number,
     }
-
-    # Перевірка на існуючий запис
     if phone_number in booked_numbers:
         await update.message.reply_text(f"Ви вже записані на {booked_numbers[phone_number]['day']} о {booked_numbers[phone_number]['slot'].replace('_', ':')}.")
         return
-
     await update.message.reply_text(f"Дякую, {contact.first_name}! Вкажіть Ваше ім'я?")
 
-# Обробка імені
 async def handle_name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     name = update.message.text.strip()
-
     if user_id in user_data:
         user_data[user_id]["full_name"] = name
         buttons = [InlineKeyboardButton(day, callback_data=f"day:{day}") for day in available_slots]
         reply_markup = InlineKeyboardMarkup([buttons[i:i+2] for i in range(0, len(buttons), 2)])
         await update.message.reply_text("Оберіть зручний день для запису:", reply_markup=reply_markup)
 
-# Вибір дня
 async def handle_day_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     day = query.data.split(":")[1]
-
     if day in available_slots:
         buttons = [InlineKeyboardButton(slot, callback_data=f"slot:{day}:{slot}") for slot in available_slots[day]]
         reply_markup = InlineKeyboardMarkup([buttons[i:i+2] for i in range(0, len(buttons), 2)])
         await query.message.reply_text(f"Оберіть час на {day}:", reply_markup=reply_markup)
 
-# Вибір часу
 async def handle_slot_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     if not query.data:
         await query.message.reply_text("Сталася помилка. Спробуйте ще раз.")
         return
-
     try:
         _, day, slot = query.data.rsplit(":", 2)
     except ValueError:
         await query.message.reply_text("Неправильний формат даних. Спробуйте ще раз.")
         return
-
     user_id = query.from_user.id
     phone_number = user_data[user_id]["phone_number"]
-
-    # Перевірка на існуючий запис
     if phone_number in booked_numbers:
         await query.message.reply_text(f"Ви вже записані на {booked_numbers[phone_number]['day']} о {booked_numbers[phone_number]['slot'].replace('_', ':')}.")
         return
-
     if slot in available_slots.get(day, []):
         available_slots[day].remove(slot)
         booked_numbers[phone_number] = {"day": day, "slot": slot}
         user_name = user_data[user_id].get("full_name", "Користувач")
         await query.edit_message_text(f"Ваш запис підтверджено на {day} о {slot.replace('_', ':')}.")
-        
-        # Надсилання сповіщення на електронну пошту
         send_email_notification(user_name, phone_number, day, slot)
     else:
         await query.message.reply_text("Цей слот вже зайнятий. Оберіть інший.")
 
-# Головна функція для запуску бота
-def main():
-    TOKEN = "7890592508:AAGBVL2XvUewLkyDP1H9AW50d7hDa8hxom8"
-    app = ApplicationBuilder().token(TOKEN).build()
+# Flask сервер
+flask_app = Flask(__name__)
 
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.CONTACT, handle_contact))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_name))
-    app.add_handler(CallbackQueryHandler(handle_day_selection, pattern="^day:"))
-    app.add_handler(CallbackQueryHandler(handle_slot_selection, pattern="^slot:"))
-
-    initialize_slots()
-    logger.info("Бот запущено...")
-
-    # Використання run_polling() без asyncio.run()
-    app.run_polling()
-
-from flask import Flask
-from threading import Thread
-from telegram.ext import Application
-
-app = Application.builder().token("7890592508:AAGBVL2XvUewLkyDP1H9AW50d7hDa8hxom8").build()
-
-def on_stop_callback():
-    logger.info("Бот був зупинений вручну або через помилку.")
-
-app.add_error_handler(on_stop_callback)
-app.run_polling()
-
-# Запускаємо простий веб-сервер
-app = Flask(__name__)
-
-@app.route("/")
+@flask_app.route("/")
 def home():
     return "Бот Telegram працює!"
 
-def run_server():
-    app.run(host="0.0.0.0", port=5000)
+def run_flask():
+    flask_app.run(host="0.0.0.0", port=5000)
+
+# Головна функція
+def main():
+    TOKEN = "7890592508:AAGBVL2XvUewLkyDP1H9AW50d7hDa8hxom8"
+    telegram_app = ApplicationBuilder().token(TOKEN).build()
+
+    telegram_app.add_handler(CommandHandler("start", start))
+    telegram_app.add_handler(MessageHandler(filters.CONTACT, handle_contact))
+    telegram_app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_name))
+    telegram_app.add_handler(CallbackQueryHandler(handle_day_selection, pattern="^day:"))
+    telegram_app.add_handler(CallbackQueryHandler(handle_slot_selection, pattern="^slot:"))
+
+    initialize_slots()
+    logger.info("Telegram бот запущено...")
+    Thread(target=run_flask).start()
+    telegram_app.run_polling()
 
 if __name__ == "__main__":
-    # Запускаємо сервер у окремому потоці
-    Thread(target=run_server).start()
-
-    # Запускаємо вашого Telegram-бота
     main()
-
