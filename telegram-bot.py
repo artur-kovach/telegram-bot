@@ -169,5 +169,23 @@ def main():
     # Використання run_polling() без asyncio.run()
     app.run_polling()
 
+from flask import Flask
+from threading import Thread
+
+# Запускаємо простий веб-сервер
+app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return "Бот Telegram працює!"
+
+def run_server():
+    app.run(host="0.0.0.0", port=5000)
+
 if __name__ == "__main__":
+    # Запускаємо сервер у окремому потоці
+    Thread(target=run_server).start()
+
+    # Запускаємо вашого Telegram-бота
     main()
+
