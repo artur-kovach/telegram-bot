@@ -173,7 +173,7 @@ from flask import Flask
 from threading import Thread
 from telegram.ext import Application
 
-app = Application.builder().token("Ваш_Telegram_Token").build()
+app = Application.builder().token("7890592508:AAGBVL2XvUewLkyDP1H9AW50d7hDa8hxom8").build()
 
 def on_stop_callback():
     logger.info("Бот був зупинений вручну або через помилку.")
